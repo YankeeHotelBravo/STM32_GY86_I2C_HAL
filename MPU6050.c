@@ -4,8 +4,8 @@
 uint8_t MPU6050_rx;
 uint8_t MPU6050_rx_buf[13];
 uint8_t MPU6050_tx;
-float MPU6050_Gyro_LSB;
-float MPU6050_Acc_LSB;
+float MPU6050_Gyro_LSB = 16.4;
+float MPU6050_Acc_LSB = 2048.0;
 
 const float MPU6050_dt = 0.001;
 const float MPU6050_alpha = 0.996;
@@ -83,6 +83,8 @@ uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t Acc_FS, u
         HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, INT_ENABLE_REG, 1, &MPU6050_tx, 1, 100);
 
         MPU6050_tx = 1; //Will return this value if settings are completed
+		
+		return 0;
     }
 
     return MPU6050_tx;
