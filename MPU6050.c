@@ -1,11 +1,11 @@
 #include <math.h>
-#include "mpu6050.h"
+#include "MPU6050.h"
 
 uint8_t MPU6050_rx;
-uint8_t MPU6050_rx_buf[13];
+uint8_t MPU6050_rx_buf[14];
 uint8_t MPU6050_tx;
-float MPU6050_Gyro_LSB = 16.4;
-float MPU6050_Acc_LSB = 2048.0;
+float MPU6050_Gyro_LSB = 32.8;
+float MPU6050_Acc_LSB = 4096.0;
 
 const float MPU6050_dt = 0.001;
 const float MPU6050_alpha = 0.996;
@@ -82,12 +82,10 @@ uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t Acc_FS, u
         MPU6050_tx = 1; //Enable Data Ready Interrupt
         HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, INT_ENABLE_REG, 1, &MPU6050_tx, 1, 100);
 
-        MPU6050_tx = 1; //Will return this value if settings are completed
-		
-		return 0;
+        return 0;
     }
 
-    return MPU6050_tx;
+    return 1;
 }
 
 uint8_t MPU6050_DataReady(I2C_HandleTypeDef *I2Cx)
@@ -126,41 +124,42 @@ void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct) {
 
     HAL_I2C_Mem_Read(I2Cx, MPU6050_ADDR, ACCEL_XOUT_H_REG, 1, MPU6050_rx_buf, 14, 100);
 
-    DataStruct->Accel_X_RAW = (int16_t) (MPU6050_rx_buf[0] << 8 | MPU6050_rx_buf[1]);
-    DataStruct->Accel_Y_RAW = (int16_t) (MPU6050_rx_buf[2] << 8 | MPU6050_rx_buf[3]);
-    DataStruct->Accel_Z_RAW = (int16_t) (MPU6050_rx_buf[4] << 8 | MPU6050_rx_buf[5]);
+    DataStruct->Accel_X_RAW = (MPU6050_rx_buf[0] << 8 | MPU6050_rx_buf[1]);
+    DataStruct->Accel_Y_RAW = (MPU6050_rx_buf[2] << 8 | MPU6050_rx_buf[3]);
+    DataStruct->Accel_Z_RAW = (MPU6050_rx_buf[4] << 8 | MPU6050_rx_buf[5]);
     // Didn't Save Temp Value
-    DataStruct->Gyro_X_RAW = (int16_t) (MPU6050_rx_buf[8] << 8 | MPU6050_rx_buf[9]);
-    DataStruct->Gyro_Y_RAW = (int16_t) (MPU6050_rx_buf[10] << 8 | MPU6050_rx_buf[11]);
-    DataStruct->Gyro_Z_RAW = (int16_t) (MPU6050_rx_buf[12] << 8 | MPU6050_rx_buf[13]);
+    DataStruct->Gyro_X_RAW = (MPU6050_rx_buf[8] << 8 | MPU6050_rx_buf[9]);
+    DataStruct->Gyro_Y_RAW = (MPU6050_rx_buf[10] << 8 | MPU6050_rx_buf[11]);
+    DataStruct->Gyro_Z_RAW = (MPU6050_rx_buf[12] << 8 | MPU6050_rx_buf[13]);
 
     DataStruct->Gyro_X_RAW -= DataStruct->Gyro_X_Offset;
     DataStruct->Gyro_Y_RAW -= DataStruct->Gyro_Y_Offset;
     DataStruct->Gyro_Z_RAW -= DataStruct->Gyro_Z_Offset;
 
 
-    DataStruct->Gx = (DataStruct->Gyro_X_RAW) / MPU6050_Gyro_LSB;
-    DataStruct->Gy = -(DataStruct->Gyro_Y_RAW) / MPU6050_Gyro_LSB;
-    DataStruct->Gz = (DataStruct->Gyro_Z_RAW) / MPU6050_Gyro_LSB;
+    DataStruct->Gx = DataStruct->Gyro_X_RAW / MPU6050_Gyro_LSB;
+    DataStruct->Gy = -DataStruct->Gyro_Y_RAW / MPU6050_Gyro_LSB;
+    DataStruct->Gz = -DataStruct->Gyro_Z_RAW / MPU6050_Gyro_LSB;
     DataStruct->Ax = DataStruct->Accel_X_RAW / MPU6050_Acc_LSB;
-    DataStruct->Ay = DataStruct->Accel_Y_RAW / MPU6050_Acc_LSB;
+    DataStruct->Ay = -DataStruct->Accel_Y_RAW / MPU6050_Acc_LSB;
     DataStruct->Az = DataStruct->Accel_Z_RAW / MPU6050_Acc_LSB;
 
 
-    DataStruct->Gyro_Pitch += DataStruct->Gx * MPU6050_dt;
-    DataStruct->Gyro_Roll += DataStruct->Gy * MPU6050_dt;
-    DataStruct->Gyro_Pitch -= DataStruct->Roll * sin(DataStruct->Gz * MPU6050_dt * D2R);
+    DataStruct->Gyro_Roll += DataStruct->Gx * MPU6050_dt;
+    DataStruct->Gyro_Pitch += DataStruct->Gy * MPU6050_dt;
+    DataStruct->Gyro_Yaw += DataStruct->Gz * MPU6050_dt;
 	DataStruct->Gyro_Roll += DataStruct->Pitch * sin(DataStruct->Gz * MPU6050_dt * D2R);
+	DataStruct->Gyro_Pitch -= DataStruct->Roll * sin(DataStruct->Gz * MPU6050_dt * D2R);
 
 
 	DataStruct->acc_total_vector=sqrtf(DataStruct->Accel_X_RAW*DataStruct->Accel_X_RAW + DataStruct->Accel_Y_RAW*DataStruct->Accel_Y_RAW + DataStruct->Accel_Z_RAW*DataStruct->Accel_Z_RAW);
-    if( abs(DataStruct->Accel_X_RAW) < DataStruct->acc_total_vector)
+    if(abs(DataStruct->Accel_X_RAW) < DataStruct->acc_total_vector)
     {
-    	DataStruct->Acc_Pitch=asinf((float)DataStruct->Accel_X_RAW/DataStruct->acc_total_vector)*(57.29577951);
+    	DataStruct->Acc_Pitch=asinf((float)DataStruct->Accel_Y_RAW/DataStruct->acc_total_vector)*(57.29577951);
     }
-    if( abs(DataStruct->Accel_Y_RAW) < DataStruct->acc_total_vector)
+    if(abs(DataStruct->Accel_Y_RAW) < DataStruct->acc_total_vector)
     {
-    	DataStruct->Acc_Roll=asinf((float)DataStruct->Accel_Y_RAW/DataStruct->acc_total_vector)*(57.29577951);
+    	DataStruct->Acc_Roll=-asinf((float)DataStruct->Accel_X_RAW/DataStruct->acc_total_vector)*(57.29577951);
     }
 
 
