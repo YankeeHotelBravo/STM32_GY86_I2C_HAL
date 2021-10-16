@@ -23,6 +23,22 @@
 // Setup MPU6050
 #define MPU6050_ADDR 0xD0
 
+/////////////////////////////////////
+#define HMC5883L_ADDRESS              0x1E // this device only has one address
+#define HMC5883L_REG_CONFIG_A         (0x00)
+#define HMC5883L_REG_CONFIG_B         (0x01)
+#define HMC5883L_REG_MODE             (0x02)
+#define HMC5883L_REG_OUT_X_M          (0x03)
+#define HMC5883L_REG_OUT_X_L          (0x04)
+#define HMC5883L_REG_OUT_Z_M          (0x05)
+#define HMC5883L_REG_OUT_Z_L          (0x06)
+#define HMC5883L_REG_OUT_Y_M          (0x07)
+#define HMC5883L_REG_OUT_Y_L          (0x08)
+#define HMC5883L_REG_STATUS           (0x09)
+#define HMC5883L_REG_IDENT_A          (0x0A)
+#define HMC5883L_REG_IDENT_B          (0x0B)
+#define HMC5883L_REG_IDENT_C          (0x0C)
+
 // MPU6050 structure
 typedef struct _MPU6050_t
 {
@@ -64,6 +80,22 @@ typedef struct _MPU6050_t
     float Roll;
     float Yaw;
 
+    int16_t Mag_X_RAW;
+    int16_t Mag_Y_RAW;
+    int16_t Mag_Z_RAW;
+
+    int16_t Mag_X_Offset;
+	int16_t Mag_Y_Offset;
+	int16_t Mag_Z_Offset;
+
+	float scale_x;
+	float scale_y;
+	float scale_z;
+
+    float Mx;
+    float My;
+    float Mz;
+
     float acc_total_vector;
 
 }MPU6050_t;
@@ -71,6 +103,12 @@ typedef struct _MPU6050_t
 MPU6050_t MPU6050;
 
 uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t ACC_FS, uint8_t DLPF_CFG);
+
+void MPU6050_Master(I2C_HandleTypeDef *I2Cx);
+
+void MPU6050_to_HMC5883L(I2C_HandleTypeDef *I2Cx);
+
+void MPU6050_Slave_Read(I2C_HandleTypeDef *I2Cx);
 
 void MPU6050_Read_Acc(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct);
 
