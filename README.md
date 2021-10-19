@@ -5,10 +5,10 @@ The HMC5883L sensor is not directly connected to SDA and SCL lines. HMC5883L sen
 
 On the other hand, MS5611 sensor is directly connected to SDA and SCL lines so it could be accessed from the master device without any issue.
 
-Completed: \n
-Reading 6 Axis info from MPU6050 \n
-Accessing HMC5883L through MPU6050 \n
-Reading data from MS5611 \n
+Completed:<br/>
+Reading 6 Axis info from MPU6050 <br/>
+Accessing HMC5883L through MPU6050 <br/>
+Reading data from MS5611 <br/>
 
-WIP: \n
+WIP: <br/>
 HMC5883L Calibration
