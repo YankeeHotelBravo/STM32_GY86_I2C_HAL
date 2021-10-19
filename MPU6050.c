@@ -1,14 +1,14 @@
 #include <math.h>
-#include "MPU6050.h"
+#include "mpu6050.h"
 
 uint8_t MPU6050_rx;
-uint8_t MPU6050_rx_buf[14];
+uint8_t MPU6050_rx_buf[20];
 uint8_t MPU6050_tx;
 float MPU6050_Gyro_LSB = 32.8;
 float MPU6050_Acc_LSB = 4096.0;
 
 const float MPU6050_dt = 0.001;
-const float MPU6050_alpha = 0.996;
+const float MPU6050_alpha = 0.9996;
 
 uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t Acc_FS, uint8_t DLPF_CFG) {
 
@@ -82,10 +82,60 @@ uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t Acc_FS, u
         MPU6050_tx = 1; //Enable Data Ready Interrupt
         HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, INT_ENABLE_REG, 1, &MPU6050_tx, 1, 100);
 
+//        MPU6050_tx = 0x00; //
+//        HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x6A, 1, &MPU6050_tx, 1, 100);
+//
+//        MPU6050_tx = 0x02; //
+//        HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x37, 1, &MPU6050_tx, 1, 100);
+
         return 0;
     }
 
     return 1;
+}
+
+void MPU6050_Master(I2C_HandleTypeDef *I2Cx)
+{
+    MPU6050_tx = 0x00; //
+    HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x37, 1, &MPU6050_tx, 1, 100);
+
+    MPU6050_tx = 0x20; //
+    HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x6A, 1, &MPU6050_tx, 1, 100);
+}
+
+void MPU6050_to_HMC5883L(I2C_HandleTypeDef *I2Cx)
+{
+	MPU6050_tx = 0x00;
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x63, 1, &MPU6050_tx, 1, 100);
+	MPU6050_tx = HMC5883L_ADDRESS; //Access HMC5883L in write mode
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x25, 1, &MPU6050_tx, 1, 100);
+	MPU6050_tx = 0x02; //Access to Config Mode of HMC5883L
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x26, 1, &MPU6050_tx, 1, 100);
+	MPU6050_tx = 1 | 0x80; //Write 1 Byte
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x27, 1, &MPU6050_tx, 1, 100);
+
+	HAL_Delay(10);
+
+	MPU6050_tx = 0b00011000; //Fill Slave0 DO
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x63, 1, &MPU6050_tx, 1, 100);
+	MPU6050_tx = HMC5883L_ADDRESS; //Access HMC5883L in write mode
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x25, 1, &MPU6050_tx, 1, 100);
+	MPU6050_tx = 0x01; //Access to Config B of HMC5883L
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x26, 1, &MPU6050_tx, 1, 100);
+	MPU6050_tx = 1 | 0x80; //Write 1 Byte
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x27, 1, &MPU6050_tx, 1, 100);
+
+	HAL_Delay(10);
+}
+
+void MPU6050_Slave_Read(I2C_HandleTypeDef *I2Cx)
+{
+	MPU6050_tx = HMC5883L_ADDRESS | 0x80; //Access Slave into read mode
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x25, 1, &MPU6050_tx, 1, 100);
+	MPU6050_tx = 0x03; //Slave REG for reading to take place
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x26, 1, &MPU6050_tx, 1, 100);
+	MPU6050_tx = 6 | 0x80; //Number of data bytes
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x27, 1, &MPU6050_tx, 1, 100);
 }
 
 uint8_t MPU6050_DataReady(I2C_HandleTypeDef *I2Cx)
@@ -122,49 +172,35 @@ void MPU6050_Read_Gyro(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct) {
 
 void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct) {
 
-    HAL_I2C_Mem_Read(I2Cx, MPU6050_ADDR, ACCEL_XOUT_H_REG, 1, MPU6050_rx_buf, 14, 100);
+    HAL_I2C_Mem_Read(I2Cx, MPU6050_ADDR, ACCEL_XOUT_H_REG, 1, MPU6050_rx_buf, 20, 2);
 
-    DataStruct->Accel_X_RAW = (MPU6050_rx_buf[0] << 8 | MPU6050_rx_buf[1]);
+    DataStruct->Accel_X_RAW = -(MPU6050_rx_buf[0] << 8 | MPU6050_rx_buf[1]);
     DataStruct->Accel_Y_RAW = (MPU6050_rx_buf[2] << 8 | MPU6050_rx_buf[3]);
     DataStruct->Accel_Z_RAW = (MPU6050_rx_buf[4] << 8 | MPU6050_rx_buf[5]);
     // Didn't Save Temp Value
     DataStruct->Gyro_X_RAW = (MPU6050_rx_buf[8] << 8 | MPU6050_rx_buf[9]);
-    DataStruct->Gyro_Y_RAW = (MPU6050_rx_buf[10] << 8 | MPU6050_rx_buf[11]);
-    DataStruct->Gyro_Z_RAW = (MPU6050_rx_buf[12] << 8 | MPU6050_rx_buf[13]);
+    DataStruct->Gyro_Y_RAW = -(MPU6050_rx_buf[10] << 8 | MPU6050_rx_buf[11]);
+    DataStruct->Gyro_Z_RAW = -(MPU6050_rx_buf[12] << 8 | MPU6050_rx_buf[13]);
+
+    DataStruct->Mag_X_RAW = (MPU6050_rx_buf[14] << 8 | MPU6050_rx_buf[15]);
+    DataStruct->Mag_Z_RAW = -(MPU6050_rx_buf[16] << 8 | MPU6050_rx_buf[17]);
+    DataStruct->Mag_Y_RAW = -(MPU6050_rx_buf[18] << 8 | MPU6050_rx_buf[19]);
+
 
     DataStruct->Gyro_X_RAW -= DataStruct->Gyro_X_Offset;
     DataStruct->Gyro_Y_RAW -= DataStruct->Gyro_Y_Offset;
     DataStruct->Gyro_Z_RAW -= DataStruct->Gyro_Z_Offset;
 
+    DataStruct->Mag_X_RAW -= DataStruct->Mag_X_Offset;
+    DataStruct->Mag_Y_RAW -= DataStruct->Mag_Y_Offset;
+	DataStruct->Mag_Z_RAW -= DataStruct->Mag_Z_Offset;
 
-    DataStruct->Gx = DataStruct->Gyro_X_RAW / MPU6050_Gyro_LSB;
-    DataStruct->Gy = -DataStruct->Gyro_Y_RAW / MPU6050_Gyro_LSB;
-    DataStruct->Gz = -DataStruct->Gyro_Z_RAW / MPU6050_Gyro_LSB;
+    DataStruct->Gx = DataStruct->Gyro_X_RAW / MPU6050_Gyro_LSB* D2R;
+    DataStruct->Gy = DataStruct->Gyro_Y_RAW / MPU6050_Gyro_LSB* D2R;
+    DataStruct->Gz = DataStruct->Gyro_Z_RAW / MPU6050_Gyro_LSB* D2R;
     DataStruct->Ax = DataStruct->Accel_X_RAW / MPU6050_Acc_LSB;
-    DataStruct->Ay = -DataStruct->Accel_Y_RAW / MPU6050_Acc_LSB;
+    DataStruct->Ay = DataStruct->Accel_Y_RAW / MPU6050_Acc_LSB;
     DataStruct->Az = DataStruct->Accel_Z_RAW / MPU6050_Acc_LSB;
-
-
-    DataStruct->Gyro_Roll += DataStruct->Gx * MPU6050_dt;
-    DataStruct->Gyro_Pitch += DataStruct->Gy * MPU6050_dt;
-    DataStruct->Gyro_Yaw += DataStruct->Gz * MPU6050_dt;
-	DataStruct->Gyro_Roll += DataStruct->Pitch * sin(DataStruct->Gz * MPU6050_dt * D2R);
-	DataStruct->Gyro_Pitch -= DataStruct->Roll * sin(DataStruct->Gz * MPU6050_dt * D2R);
-
-
-	DataStruct->acc_total_vector=sqrtf(DataStruct->Accel_X_RAW*DataStruct->Accel_X_RAW + DataStruct->Accel_Y_RAW*DataStruct->Accel_Y_RAW + DataStruct->Accel_Z_RAW*DataStruct->Accel_Z_RAW);
-    if(abs(DataStruct->Accel_X_RAW) < DataStruct->acc_total_vector)
-    {
-    	DataStruct->Acc_Pitch=asinf((float)DataStruct->Accel_Y_RAW/DataStruct->acc_total_vector)*(57.29577951);
-    }
-    if(abs(DataStruct->Accel_Y_RAW) < DataStruct->acc_total_vector)
-    {
-    	DataStruct->Acc_Roll=-asinf((float)DataStruct->Accel_X_RAW/DataStruct->acc_total_vector)*(57.29577951);
-    }
-
-
-  	DataStruct->Pitch =MPU6050_alpha*DataStruct->Gyro_Pitch + (1-MPU6050_alpha)*(DataStruct->Acc_Pitch);
-  	DataStruct->Roll =MPU6050_alpha*DataStruct->Gyro_Roll + (1-MPU6050_alpha)*(DataStruct->Acc_Roll);
 }
 
 void MPU6050_Read_Temp(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct) {
