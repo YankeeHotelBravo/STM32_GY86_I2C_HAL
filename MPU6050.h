@@ -76,17 +76,25 @@ typedef struct _MPU6050_t
     float Acc_Roll;
     float Acc_Yaw;
 
-    float Pitch;
-    float Roll;
-    float Yaw;
-
     int16_t Mag_X_RAW;
     int16_t Mag_Y_RAW;
     int16_t Mag_Z_RAW;
 
+    int16_t Mag_X_Min;
+	int16_t Mag_Y_Min;
+	int16_t Mag_Z_Min;
+
+    int16_t Mag_X_Max;
+	int16_t Mag_Y_Max;
+	int16_t Mag_Z_Max;
+
     int16_t Mag_X_Offset;
 	int16_t Mag_Y_Offset;
 	int16_t Mag_Z_Offset;
+
+	float Mag_X_Scale;
+	float Mag_Y_Scale;
+	float Mag_Z_Scale;
 
 	float scale_x;
 	float scale_y;
@@ -117,5 +125,11 @@ void MPU6050_Read_Gyro(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct);
 void MPU6050_Read_Temp(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct);
 
 void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct);
+
+void MPU6050_Read_All_DMA(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct);
+
+void MPU6050_Parsing(MPU6050_t *DataStruct);
+
+
 
 #endif /* MPU6050_H */
