@@ -4,6 +4,7 @@
 uint8_t MPU6050_rx;
 uint8_t MPU6050_rx_buf[20];
 uint8_t MPU6050_tx;
+
 float MPU6050_Gyro_LSB = 32.8;
 float MPU6050_Acc_LSB = 4096.0;
 
@@ -177,6 +178,10 @@ void MPU6050_Slave_Read(I2C_HandleTypeDef *I2Cx)
 	MPU6050_tx = 0x80 | 0x06; //Number of data bytes
 	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x27, 1, &MPU6050_tx, 1, 100);
 	HAL_Delay(10);
+
+	MPU6050_tx = 0x00;
+	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, PWR_MGMT_1_REG, 1, &MPU6050_tx, 1, 100);
+	HAL_Delay(10);
 }
 
 uint8_t MPU6050_DataReady(I2C_HandleTypeDef *I2Cx)
@@ -213,39 +218,6 @@ void MPU6050_Read_Gyro(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
 	DataStruct->Gz = DataStruct->Gyro_Z_RAW / MPU6050_Gyro_LSB;
 }
 
-void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
-{
-
-	HAL_I2C_Mem_Read_DMA(I2Cx, MPU6050_ADDR, ACCEL_XOUT_H_REG, 1, MPU6050_rx_buf, 20);
-
-	DataStruct->Accel_X_RAW = -(MPU6050_rx_buf[0] << 8 | MPU6050_rx_buf[1]);
-	DataStruct->Accel_Y_RAW = (MPU6050_rx_buf[2] << 8 | MPU6050_rx_buf[3]);
-	DataStruct->Accel_Z_RAW = (MPU6050_rx_buf[4] << 8 | MPU6050_rx_buf[5]);
-	// Didn't Save Temp Value
-	DataStruct->Gyro_X_RAW = (MPU6050_rx_buf[8] << 8 | MPU6050_rx_buf[9]);
-	DataStruct->Gyro_Y_RAW = -(MPU6050_rx_buf[10] << 8 | MPU6050_rx_buf[11]);
-	DataStruct->Gyro_Z_RAW = -(MPU6050_rx_buf[12] << 8 | MPU6050_rx_buf[13]);
-
-	DataStruct->Mag_X_RAW = (MPU6050_rx_buf[14] << 8 | MPU6050_rx_buf[15]);
-	DataStruct->Mag_Z_RAW = -(MPU6050_rx_buf[16] << 8 | MPU6050_rx_buf[17]);
-	DataStruct->Mag_Y_RAW = -(MPU6050_rx_buf[18] << 8 | MPU6050_rx_buf[19]);
-
-
-	DataStruct->Gyro_X_RAW -= DataStruct->Gyro_X_Offset;
-	DataStruct->Gyro_Y_RAW -= DataStruct->Gyro_Y_Offset;
-	DataStruct->Gyro_Z_RAW -= DataStruct->Gyro_Z_Offset;
-
-//	DataStruct->Mag_X_RAW -= DataStruct->Mag_X_Offset;
-//	DataStruct->Mag_Y_RAW -= DataStruct->Mag_Y_Offset;
-//	DataStruct->Mag_Z_RAW -= DataStruct->Mag_Z_Offset;
-
-	DataStruct->Gx = DataStruct->Gyro_X_RAW / MPU6050_Gyro_LSB* D2R;
-	DataStruct->Gy = DataStruct->Gyro_Y_RAW / MPU6050_Gyro_LSB* D2R;
-	DataStruct->Gz = DataStruct->Gyro_Z_RAW / MPU6050_Gyro_LSB* D2R;
-	DataStruct->Ax = DataStruct->Accel_X_RAW / MPU6050_Acc_LSB;
-	DataStruct->Ay = DataStruct->Accel_Y_RAW / MPU6050_Acc_LSB;
-	DataStruct->Az = DataStruct->Accel_Z_RAW / MPU6050_Acc_LSB;
-}
 
 void MPU6050_Read_Temp(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
 {
@@ -257,6 +229,11 @@ void MPU6050_Read_Temp(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
 
 	temp = (int16_t) (MPU6050_rx_buf[0] << 8 | MPU6050_rx_buf[1]);
 	DataStruct->Temperature = (float) ((int16_t) temp / (float) 340.0 + (float) 36.53);
+}
+
+void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
+{
+	HAL_I2C_Mem_Read(I2Cx, MPU6050_ADDR, ACCEL_XOUT_H_REG, 1, MPU6050_rx_buf, 20, 100);
 }
 
 void MPU6050_Read_All_DMA(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
