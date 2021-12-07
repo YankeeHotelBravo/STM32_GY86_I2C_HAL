@@ -59,6 +59,9 @@ typedef struct
 	int64_t SENS;
 	int32_t P;
 
+	float Alt;
+	float Alt_Filt;
+
 	int OFF2;
 	int T2;
 	int SENS2;
@@ -82,4 +85,6 @@ void MS5611_ReadPressure(I2C_HandleTypeDef *I2Cx, MS5611_t *DataStruct);
 void MS5611_CalculateTemperature(MS5611_t *DataStruct);
 void MS5611_CalculatePressure(MS5611_t *DataStruct);
 
+float MS5611_getAltitude1(float pressure);
+float MS5611_getAltitude2(float pressure , float temperature);
 #endif /* MS5611_H */

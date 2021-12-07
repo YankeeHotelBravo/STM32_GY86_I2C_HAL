@@ -6,7 +6,7 @@
 
 #define D2R 0.01745329252 //Degree To Radian Constant
 
-#define MPU6050_ADDR 0xD0
+#define MPU6050_ADDR 0xD0 //Already left shifted
 #define CONFIG_REG 0x1A
 #define GYRO_CONFIG_REG 0x1B
 #define ACCEL_CONFIG_REG 0x1C
@@ -22,7 +22,7 @@
 #define WHO_AM_I_REG 0x75
 
 /////////////////////////////////////
-#define HMC5883L_ADDRESS              0x1E // this device only has one address
+#define HMC5883L_ADDRESS              0x1E // Must be left shifted to work
 #define HMC5883L_REG_CONFIG_A         (0x00)
 #define HMC5883L_REG_CONFIG_B         (0x01)
 #define HMC5883L_REG_MODE             (0x02)
@@ -60,19 +60,7 @@ typedef struct _MPU6050_t
     float Gy;
     float Gz;
 
-    float Gx_Prev;
-    float Gy_Prev;
-    float Gz_Prev;
-
     float Temperature;
-
-    float Gyro_Pitch;
-    float Gyro_Roll;
-    float Gyro_Yaw;
-
-    float Acc_Pitch;
-    float Acc_Roll;
-    float Acc_Yaw;
 
     int16_t Mag_X_RAW;
     int16_t Mag_Y_RAW;
@@ -90,19 +78,9 @@ typedef struct _MPU6050_t
 	int16_t Mag_Y_Offset;
 	int16_t Mag_Z_Offset;
 
-	float Mag_X_Scale;
-	float Mag_Y_Scale;
-	float Mag_Z_Scale;
-
-	float scale_x;
-	float scale_y;
-	float scale_z;
-
     float Mx;
     float My;
     float Mz;
-
-    float acc_total_vector;
 
 }MPU6050_t;
 
