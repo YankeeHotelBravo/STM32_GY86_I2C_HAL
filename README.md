@@ -18,7 +18,8 @@ Completed:<br/>
 Reading 6 Axis info from MPU6050 <br/>
 Accessing HMC5883L through MPU6050 <br/>
 Reading data from MS5611 <br/>
+HMC5883L Calibration <br/>
+MS5611 Stabilization <br/>
 
 WIP: <br/>
-HMC5883L Calibration
-MS5611 Stabilization
+
