@@ -108,39 +108,6 @@ void MPU6050_Master(I2C_HandleTypeDef *I2Cx)
 	HAL_Delay(10);
 }
 
-void MPU6050_to_HMC5883L(I2C_HandleTypeDef *I2Cx)
-{
-	MPU6050_tx = 0b00011000; //Fill Slave0 DO
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x63, 1, &MPU6050_tx, 1, 100);
-	MPU6050_tx = HMC5883L_ADDRESS; //Access HMC5883L in write mode
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x25, 1, &MPU6050_tx, 1, 100);
-	MPU6050_tx = 0x00; //Access to Config A of HMC5883L
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x26, 1, &MPU6050_tx, 1, 100);
-	MPU6050_tx = 1 | 0x80; //Enable +  1 Byte
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x27, 1, &MPU6050_tx, 1, 100);
-	HAL_Delay(10);
-
-	MPU6050_tx = 0b00000000; //Fill Slave0 DO
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x63, 1, &MPU6050_tx, 1, 100);
-	MPU6050_tx = HMC5883L_ADDRESS; //Access HMC5883L in write mode
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x25, 1, &MPU6050_tx, 1, 100);
-	MPU6050_tx = 0x01; //Access to Config B of HMC5883L
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x26, 1, &MPU6050_tx, 1, 100);
-	MPU6050_tx = 1 | 0x80; //Enable +  1 Byte
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x27, 1, &MPU6050_tx, 1, 100);
-	HAL_Delay(10);
-
-	MPU6050_tx = 0x00;
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x63, 1, &MPU6050_tx, 1, 100);
-	MPU6050_tx = HMC5883L_ADDRESS; //Access HMC5883L in write mode
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x25, 1, &MPU6050_tx, 1, 100);
-	MPU6050_tx = 0x02; //Access to Config Mode of HMC5883L
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x26, 1, &MPU6050_tx, 1, 100);
-	MPU6050_tx = 1 | 0x80; //Enable +  1 Byte
-	HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, 0x27, 1, &MPU6050_tx, 1, 100);
-	HAL_Delay(10);
-}
-
 void HMC5883L_Setup(I2C_HandleTypeDef *I2Cx)
 {
 	MPU6050_tx = 0b00011000; //Fill Slave0 DO

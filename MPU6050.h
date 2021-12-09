@@ -6,7 +6,7 @@
 
 #define D2R 0.01745329252 //Degree To Radian Constant
 
-#define MPU6050_ADDR 0xD0
+#define MPU6050_ADDR 0xD0 //Already Left Shifted
 #define CONFIG_REG 0x1A
 #define GYRO_CONFIG_REG 0x1B
 #define ACCEL_CONFIG_REG 0x1C
@@ -22,7 +22,7 @@
 #define WHO_AM_I_REG 0x75
 
 /////////////////////////////////////
-#define HMC5883L_ADDRESS              0x1E // this device only has one address
+#define HMC5883L_ADDRESS              0x1E // Not Left Shifted
 #define HMC5883L_REG_CONFIG_A         (0x00)
 #define HMC5883L_REG_CONFIG_B         (0x01)
 #define HMC5883L_REG_MODE             (0x02)
@@ -90,17 +90,14 @@ uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t ACC_FS, u
 
 void MPU6050_Bypass(I2C_HandleTypeDef *I2Cx);
 void MPU6050_Master(I2C_HandleTypeDef *I2Cx);
-void MPU6050_to_HMC5883L(I2C_HandleTypeDef *I2Cx);
+void HMC5883L_Setup(I2C_HandleTypeDef *I2Cx);
 void MPU6050_Slave_Read(I2C_HandleTypeDef *I2Cx);
 
-void HMC5883L_Setup(I2C_HandleTypeDef *I2Cx);
+uint8_t MPU6050_DataReady(I2C_HandleTypeDef *I2Cx);
 
 void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct);
 void MPU6050_Read_All_DMA(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct);
 void MPU6050_Parsing(MPU6050_t *DataStruct);
 void MPU6050_Parsing_NoOffest(MPU6050_t *DataStruct);
-
-
-
 
 #endif /* MPU6050_H */
