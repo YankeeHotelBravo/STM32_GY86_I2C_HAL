@@ -8,7 +8,7 @@
 #include "MS5611.h"
 #include <math.h>
 
-uint8_t MS5611_rx_buf[2];
+uint8_t MS5611_rx_buf[12];
 uint8_t MS5611_rx_temp[3];
 uint8_t MS5611_rx_press[3];
 uint8_t MS5611_tx;
@@ -93,7 +93,10 @@ void MS5611_RequestPressure(I2C_HandleTypeDef *I2Cx, OSR osr)
 void MS5611_ReadTemperature(I2C_HandleTypeDef *I2Cx, MS5611_t *DataStruct)
 {
 	//Read ADC
-	HAL_I2C_Mem_Read(I2Cx, MS5611_ADDR <<1 , 0x00, 1, MS5611_rx_temp, 3, 100);
+	MS5611_tx = 0x00;
+	HAL_I2C_Master_Transmit(I2Cx, MS5611_ADDR << 1, &MS5611_tx, 1, 100);
+	HAL_I2C_Master_Receive(I2Cx, (MS5611_ADDR << 1) | 0x01, MS5611_rx_temp, 3, 100);
+//	HAL_I2C_Mem_Read(I2Cx, MS5611_ADDR <<1 , 0x00, 1, MS5611_rx_temp, 3, 100);
 
 	DataStruct->DigitalTemperature_D2 = (MS5611_rx_temp[0] << 16) | (MS5611_rx_temp[1] << 8) | MS5611_rx_temp[2];
 }
@@ -101,7 +104,10 @@ void MS5611_ReadTemperature(I2C_HandleTypeDef *I2Cx, MS5611_t *DataStruct)
 void MS5611_ReadPressure(I2C_HandleTypeDef *I2Cx, MS5611_t *DataStruct)
 {
 	//Read ADC
-	HAL_I2C_Mem_Read(I2Cx, MS5611_ADDR <<1, 0x00, 1, MS5611_rx_press, 3, 100);
+	MS5611_tx = 0x00;
+	HAL_I2C_Master_Transmit(I2Cx, MS5611_ADDR << 1, &MS5611_tx, 1, 100);
+	HAL_I2C_Master_Receive(I2Cx, (MS5611_ADDR << 1) | 0x01, MS5611_rx_press, 3, 100);
+	//HAL_I2C_Mem_Read(I2Cx, MS5611_ADDR <<1, 0x00, 1, MS5611_rx_press, 3, 100);
 
 	DataStruct->DigitalPressure_D1 = MS5611_rx_press[0] << 16 | MS5611_rx_press[1] << 8 | MS5611_rx_press[2];
 }
