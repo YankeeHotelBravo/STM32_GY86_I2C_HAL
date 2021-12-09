@@ -9,26 +9,21 @@ float MPU6050_Acc_LSB = 4096.0;
 
 uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t Acc_FS, uint8_t DLPF_CFG)
 {
-
 	//Save LSB/Unit for both gyro and acc in order to use them later
 	switch(Gyro_FS)
 	{
 	case 0: //250dps
 		MPU6050_Gyro_LSB = 131.0;
 		break;
-
 	case 1: //500dps
 		MPU6050_Gyro_LSB = 65.5;
 		break;
-
 	case 2: //1000dps
 		MPU6050_Gyro_LSB = 32.8;
 		break;
-
 	case 3: //2000dps
 		MPU6050_Gyro_LSB = 16.4;
 		break;
-
 	default:
 		break;
 	}
@@ -38,19 +33,15 @@ uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t Acc_FS, u
 	case 0: //2g
 		MPU6050_Acc_LSB = 16384.0;
 		break;
-
 	case 1: //4g
 		MPU6050_Acc_LSB = 8192.0;
 		break;
-
 	case 2: //8g
 		MPU6050_Acc_LSB = 4096.0;
 		break;
-
 	case 3: //16g
 		MPU6050_Acc_LSB = 2048.0;
 		break;
-
 	default:
 		break;
 	}
@@ -186,56 +177,14 @@ uint8_t MPU6050_DataReady(I2C_HandleTypeDef *I2Cx)
 	return MPU6050_rx;
 }
 
-void MPU6050_Read_Acc(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
-{
-
-	HAL_I2C_Mem_Read(I2Cx, MPU6050_ADDR, ACCEL_XOUT_H_REG, 1, MPU6050_rx_buf, 6, 100);
-
-	DataStruct->Accel_X_RAW = (int16_t) (MPU6050_rx_buf[0] << 8 | MPU6050_rx_buf[1]);
-	DataStruct->Accel_Y_RAW = (int16_t) (MPU6050_rx_buf[2] << 8 | MPU6050_rx_buf[3]);
-	DataStruct->Accel_Z_RAW = (int16_t) (MPU6050_rx_buf[4] << 8 | MPU6050_rx_buf[5]);
-
-	DataStruct->Ax = DataStruct->Accel_X_RAW / MPU6050_Acc_LSB;
-	DataStruct->Ay = DataStruct->Accel_Y_RAW / MPU6050_Acc_LSB;
-	DataStruct->Az = DataStruct->Accel_Z_RAW / MPU6050_Acc_LSB;
-}
-
-void MPU6050_Read_Gyro(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
-{
-
-	HAL_I2C_Mem_Read(I2Cx, MPU6050_ADDR, GYRO_XOUT_H_REG, 1, MPU6050_rx_buf, 6, 100);
-
-	DataStruct->Gyro_X_RAW = (int16_t) (MPU6050_rx_buf[0] << 8 | MPU6050_rx_buf[1]);
-	DataStruct->Gyro_Y_RAW = (int16_t) (MPU6050_rx_buf[2] << 8 | MPU6050_rx_buf[3]);
-	DataStruct->Gyro_Z_RAW = (int16_t) (MPU6050_rx_buf[4] << 8 | MPU6050_rx_buf[5]);
-
-	DataStruct->Gx = DataStruct->Gyro_X_RAW / MPU6050_Gyro_LSB;
-	DataStruct->Gy = DataStruct->Gyro_Y_RAW / MPU6050_Gyro_LSB;
-	DataStruct->Gz = DataStruct->Gyro_Z_RAW / MPU6050_Gyro_LSB;
-}
-
 void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
 {
 	HAL_I2C_Mem_Read(I2Cx, MPU6050_ADDR, ACCEL_XOUT_H_REG, 1, MPU6050_rx_buf, 20, 100);
 }
 
-void MPU6050_Read_Temp(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
-{
-	int16_t temp;
-
-	// Read 2 BYTES of data starting from TEMP_OUT_H_REG register
-
-	HAL_I2C_Mem_Read(I2Cx, MPU6050_ADDR, TEMP_OUT_H_REG, 1, MPU6050_rx_buf, 2, 100);
-
-	temp = (int16_t) (MPU6050_rx_buf[0] << 8 | MPU6050_rx_buf[1]);
-	DataStruct->Temperature = (float) ((int16_t) temp / (float) 340.0 + (float) 36.53);
-}
-
 void MPU6050_Read_All_DMA(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
 {
-
 	HAL_I2C_Mem_Read_DMA(I2Cx, MPU6050_ADDR, ACCEL_XOUT_H_REG, 1, MPU6050_rx_buf, 20);
-
 }
 
 void MPU6050_Parsing(MPU6050_t *DataStruct)
@@ -252,7 +201,6 @@ void MPU6050_Parsing(MPU6050_t *DataStruct)
 	DataStruct->Mag_Z_RAW = -(MPU6050_rx_buf[16] << 8 | MPU6050_rx_buf[17]);
 	DataStruct->Mag_Y_RAW = -(MPU6050_rx_buf[18] << 8 | MPU6050_rx_buf[19]);
 
-
 	DataStruct->Gyro_X_RAW -= DataStruct->Gyro_X_Offset;
 	DataStruct->Gyro_Y_RAW -= DataStruct->Gyro_Y_Offset;
 	DataStruct->Gyro_Z_RAW -= DataStruct->Gyro_Z_Offset;
@@ -260,6 +208,7 @@ void MPU6050_Parsing(MPU6050_t *DataStruct)
 	DataStruct->Mag_X_RAW -= DataStruct->Mag_X_Offset;
 	DataStruct->Mag_Y_RAW -= DataStruct->Mag_Y_Offset;
 	DataStruct->Mag_Z_RAW -= DataStruct->Mag_Z_Offset;
+
 
 	DataStruct->Gx = DataStruct->Gyro_X_RAW / MPU6050_Gyro_LSB* D2R;
 	DataStruct->Gy = DataStruct->Gyro_Y_RAW / MPU6050_Gyro_LSB* D2R;
@@ -283,14 +232,10 @@ void MPU6050_Parsing_NoOffest(MPU6050_t *DataStruct)
 	DataStruct->Mag_Z_RAW = -(MPU6050_rx_buf[16] << 8 | MPU6050_rx_buf[17]);
 	DataStruct->Mag_Y_RAW = -(MPU6050_rx_buf[18] << 8 | MPU6050_rx_buf[19]);
 
-
 	DataStruct->Gyro_X_RAW -= DataStruct->Gyro_X_Offset;
 	DataStruct->Gyro_Y_RAW -= DataStruct->Gyro_Y_Offset;
 	DataStruct->Gyro_Z_RAW -= DataStruct->Gyro_Z_Offset;
 
-//	DataStruct->Mag_X_RAW -= DataStruct->Mag_X_Offset;
-//	DataStruct->Mag_Y_RAW -= DataStruct->Mag_Y_Offset;
-//	DataStruct->Mag_Z_RAW -= DataStruct->Mag_Z_Offset;
 
 	DataStruct->Gx = DataStruct->Gyro_X_RAW / MPU6050_Gyro_LSB* D2R;
 	DataStruct->Gy = DataStruct->Gyro_Y_RAW / MPU6050_Gyro_LSB* D2R;
