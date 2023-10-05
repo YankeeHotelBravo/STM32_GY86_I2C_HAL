@@ -7,21 +7,21 @@ https://github.com/leech001/MPU6050
 2. HMC5883L (Understanding Auxiliary I2C)
 3. MS5611
 
-## 1. MPU6050 </br>
-MPU6050 Sensor is fairly simple to use. All you have to use is the following functions created in this library.
+## 1. MPU6050
+MPU6050 Sensor is fairly simple to use. All you have to use is the following functions created in this library. </br>
 
 uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t Acc_FS, uint8_t DLPF_CFG) </br>
 This function is to set the full scale of the sensor. Full scale decides the maximum range of measurement. If the maximum range increases, the accuracy of measurement decreases due to the fact that number of bytes used to produce measurement value does not change, while the </br>
 
 ## 2. HMC5883L
-The HMC5883L sensor is not directly connected to SDA and SCL lines which is connected to the external pins. HMC5883L sensor is connected through auxiliary lines connected to MPU6050, which is not physically accessible through external pins on the board. In order to properly set up the HMC5883L, the MPU6050 must be in bypass mode so that the micro controller can simply bypass MPU6050 and directly access to the HMC5883L. Only then the microcontroller can write registers to HMC5883L sensor. Once initialization of HMC5883L is complete, the MPU6050 should be brought back to the master mode and it should read the data from HMC5883L. The data sent by the HMC5883L will be read by the MPU6050, then it will be saved to the MPU6050's internal register address. When the user requires to read the data, the user can retrieve 9 axis values through reading the registers from MPU6050.
-
-Summary of HMC5883L
-1. Set MPU6050 to bypass mode (it is set to master mode by default, therefore needs to be changed)
-2. Directly access HMC5883L for initial setup
-3. Set MPU6050 to back to master mode
-4. Let MPU6050 to read HMC5883L through auxiliary I2C connection
-5. Read 9 axis values from MPU6050
+The HMC5883L sensor is not directly connected to SDA and SCL lines which is connected to the external pins. HMC5883L sensor is connected through auxiliary lines connected to MPU6050, which is not physically accessible through external pins on the board. In order to properly set up the HMC5883L, the MPU6050 must be in bypass mode so that the micro controller can simply bypass MPU6050 and directly access to the HMC5883L. Only then the microcontroller can write registers to HMC5883L sensor. Once initialization of HMC5883L is complete, the MPU6050 should be brought back to the master mode and it should read the data from HMC5883L. The data sent by the HMC5883L will be read by the MPU6050, then it will be saved to the MPU6050's internal register address. When the user requires to read the data, the user can retrieve 9 axis values through reading the registers from MPU6050. </br>
+</br>
+Summary of HMC5883L </br>
+1. Set MPU6050 to bypass mode (it is set to master mode by default, therefore needs to be changed) </br>
+2. Directly access HMC5883L for initial setup </br>
+3. Set MPU6050 to back to master mode </br>
+4. Let MPU6050 to read HMC5883L through auxiliary I2C connection </br>
+5. Read 9 axis values from MPU6050 </br>
 
 
 ## 3. MS5611
