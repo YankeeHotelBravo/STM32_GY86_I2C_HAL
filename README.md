@@ -34,12 +34,7 @@ MPU6050_Master(I2C_HandleTypeDef *I2Cx)
 ~~~
 This function will put the sensor back to master mode. It means that the MCU can communicate with MPU6050, but not the HMC5883L. 
 
+
 ## 2. MS5611
-
-</br>
-
-
-
-## 3. MS5611
 On the other hand, MS5611 sensor is directly connected to SDA and SCL lines so it could be accessed from the master device without any issue.
 
