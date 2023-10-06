@@ -10,7 +10,9 @@ https://github.com/leech001/MPU6050
 ## 1. MPU6050
 MPU6050 Sensor is fairly simple to use. All you have to use is the following functions created in this library. </br>
 
-uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t Acc_FS, uint8_t DLPF_CFG) </br>
+{
+MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t Acc_FS, uint8_t DLPF_CFG)
+}
 This function is to set the full scale of the sensor. Full scale decides the maximum range of measurement. If the maximum range increases, the accuracy of measurement decreases due to the fact that number of bytes used to produce measurement value does not change, while the </br>
 
 ## 2. HMC5883L
