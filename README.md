@@ -10,9 +10,9 @@ https://github.com/leech001/MPU6050
 ## 1. MPU6050
 MPU6050 Sensor is fairly simple to use. All you have to use is the following functions created in this library. </br>
 
-'''
+~~~
 MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t Acc_FS, uint8_t DLPF_CFG)
-'''
+~~~
 </br>
 This function is to set the full scale of the sensor. The range of output value is always consist of 16bit, however changing the full scale will change what the value means in real physical units.
 
