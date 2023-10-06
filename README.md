@@ -34,6 +34,25 @@ MPU6050_Master(I2C_HandleTypeDef *I2Cx)
 ~~~
 This function will put the sensor back to master mode. It means that the MCU can communicate with MPU6050, but not the HMC5883L. 
 
+~~~
+HMC5883L_Setup(I2C_HandleTypeDef *I2Cx)
+~~~
+Once the MPU6050 is set to bypass mode, use this function to complete the basic settings for the HMC5883L.
+
+~~~
+MPU6050_Slave_Read(I2C_HandleTypeDef *I2Cx)
+~~~
+This function will allow MPU6050 to automatically read values from HMC5883L by itself and save the data into it's own register.
+
+~~~
+MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
+~~~
+This function will let the MCU read all the outputs of MPU6050 including the values that the MPU6050 has retrieved from the HMC5883L.
+
+~~~
+MPU6050_Parsing_NoOffest(MPU6050_t *DataStruct)
+~~~
+This function will do bit shifting so that the retrieved values from sensors would fit to the proper form, and it will also convert some values into different unit.
 
 ## 2. MS5611
 On the other hand, MS5611 sensor is directly connected to SDA and SCL lines so it could be accessed from the master device without any issue.
