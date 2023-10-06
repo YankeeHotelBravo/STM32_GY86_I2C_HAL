@@ -13,8 +13,13 @@ MPU6050 Sensor is fairly simple to use. All you have to use is the following fun
 ~~~
 MPU6050_Init(I2C_HandleTypeDef *I2Cx, uint8_t Gyro_FS, uint8_t Acc_FS, uint8_t DLPF_CFG)
 ~~~
-</br>
 This function is to set the full scale of the sensor. The range of output value is always consist of 16bit, however changing the full scale will change what the value means in real physical units.
+
+~~~
+MPU6050_Bypass(I2C_HandleTypeDef *I2Cx)
+~~~
+This function will put the MPU6050 sensor into a bypass mode. It will basically bypass all I2C communication sent to the main I2C line towards the HMC5883L so that the MCU can directly communication with HMC5883L.
+
 
 ## 2. HMC5883L
 The HMC5883L sensor is not directly connected to SDA and SCL lines which is connected to the external pins. HMC5883L sensor is connected through auxiliary lines connected to MPU6050, which is not physically accessible through external pins on the board. In order to properly set up the HMC5883L, the MPU6050 must be in bypass mode so that the micro controller can simply bypass MPU6050 and directly access to the HMC5883L. Only then the microcontroller can write registers to HMC5883L sensor. Once initialization of HMC5883L is complete, the MPU6050 should be brought back to the master mode and it should read the data from HMC5883L. The data sent by the HMC5883L will be read by the MPU6050, then it will be saved to the MPU6050's internal register address. When the user requires to read the data, the user can retrieve 9 axis values through reading the registers from MPU6050. </br>
